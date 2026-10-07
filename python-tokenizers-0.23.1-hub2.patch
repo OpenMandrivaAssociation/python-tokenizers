@@ -1,0 +1,23 @@
+The installed Python module does not import huggingface_hub.
+Tokenizer download uses the Rust hf-hub crate. Allow hub 2.x so the
+package can be installed on cooker, which has huggingface-hub 2.1.1.
+--- tokenizers-0.23.1/pyproject.toml
++++ tokenizers-0.23.1/pyproject.toml
+@@ -24,6 +24,6 @@
+ keywords = ["NLP", "tokenizer", "BPE", "transformer", "deep learning"]
+ dynamic = ["description", "license", "readme", "version"]
+-dependencies = ["huggingface_hub>=0.16.4,<2.0"]
++dependencies = ["huggingface_hub>=0.16.4,<3"]
+ 
+ [project.urls]
+ Homepage = "https://github.com/huggingface/tokenizers"
+--- tokenizers-0.23.1/PKG-INFO
++++ tokenizers-0.23.1/PKG-INFO
+@@ -16,6 +16,6 @@
+ Classifier: Programming Language :: Python :: 3 :: Only
+ Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+-Requires-Dist: huggingface-hub>=0.16.4,<2.0
++Requires-Dist: huggingface-hub>=0.16.4,<3
+ Requires-Dist: tokenizers[testing] ; extra == 'dev'
+ Requires-Dist: sphinx ; extra == 'docs'
+ Requires-Dist: sphinx-rtd-theme ; extra == 'docs'
