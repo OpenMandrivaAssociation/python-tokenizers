@@ -9,8 +9,8 @@
 #   abb store python-tokenizers-VERSION-vendor.tar.xz
 
 Name:		python-tokenizers
-Version:	0.23.1
-Release:	2
+Version:	0.23.3
+Release:	1
 Summary:	Fast state-of-the-art tokenizers for research and production
 License:	Apache-2.0
 Group:		Development/Python
