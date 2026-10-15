@@ -9,8 +9,8 @@
 #   abb store python-tokenizers-VERSION-vendor.tar.xz
 
 Name:		python-tokenizers
-Version:	0.23.3
-Release:	1
+Version:	0.23.1
+Release:	3
 Summary:	Fast state-of-the-art tokenizers for research and production
 License:	Apache-2.0
 Group:		Development/Python
@@ -25,10 +25,10 @@ BuildSystem:	python
 BuildRequires:	cargo
 BuildRequires:	cmake
 BuildRequires:	pkgconfig(oniguruma)
-BuildRequires:	pkgconfig(python)
+BuildRequires:	pkgconfig(python3)
 BuildRequires:	python%{pyver}dist(maturin)
 BuildRequires:	python%{pyver}dist(pip)
-BuildRequires:	rust-packaging
+BuildRequires:	python%{pyver}dist(wheel)
 
 %description
 Provides an implementation of today's most used tokenizers, with a
@@ -36,23 +36,36 @@ focus on performance and versatility. Python bindings over the Rust
 implementation.
 
 %prep -a
-tar xf %{SOURCE1}
-%cargo_prep -v vendor
-# cargo_prep writes a CWD-relative path; maturin/cargo also run from
-# bindings/python/
-sed -i "s#directory = \"vendor\"#directory = \"$PWD/vendor\"#" .cargo/config.toml
+# Crates are already vendored. rust-packaging pulls python-rust2rpm, which
+# still requires Python 3.14.
+tar -xf %{SOURCE1}
+mkdir -p .cargo
+cat > .cargo/config.toml << EOF
+[net]
+offline = true
+
+[source.crates-io]
+replace-with = "vendored-sources"
+
+[source.vendored-sources]
+directory = "$PWD/vendor"
+EOF
 
 %build -p
 export CARGO_HOME=$PWD/.cargo
 export CARGO_NET_OFFLINE=true
 export RUSTONIG_SYSTEM_LIBONIG=1
+# pyo3 0.28.2 abi3-py310 falls back to the 3.14 stable ABI on 3.15.
+export PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1
 
 %build -a
 rm -rf bindings/python/.cargo
 ln -sfn ../../.cargo bindings/python/.cargo
 pushd bindings/python
-%cargo_license_summary
-%{cargo_license} > ../../LICENSES.dependencies
+cargo tree --locked --offline --edges no-build,no-dev,no-proc-macro \
+	--prefix none --format '{l}: {p}' \
+	| sed -e "s: ($(pwd)[^)]*)::g" -e 's: / :/:g' -e 's:/: OR :g' \
+	| sort -u > ../../LICENSES.dependencies
 popd
 
 %files
